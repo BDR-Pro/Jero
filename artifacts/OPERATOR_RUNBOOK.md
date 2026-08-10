@@ -4,6 +4,10 @@ This is the human-in-the-loop procedure. This automated environment cannot do it
 (targets are egress-blocked, and authorization is bound to *your* HackerOne account).
 Follow these steps on your own machine, with your own authorized accounts.
 
+> **New to hands-on testing? Read `RUNBOOK_101.md` first** — it installs the tools,
+> teaches the one core skill (capture a request → turn it into a test), and walks a
+> worked example. This file is the checklist; 101 is the tutorial.
+
 ---
 
 ## Step 0 — Decide *where* you run (unblock the environment or go local)

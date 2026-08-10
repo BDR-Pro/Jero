@@ -1,0 +1,45 @@
+{
+  "_comment": "H-7 Pay merchant isolation + state-machine. Two of YOUR OWN sandbox merchant accounts. Steps run in order; {{charge_id}} etc. are captured from earlier responses. Steps with expect.deny=true are NEGATIVE tests (success = potential finding). Use minimal amounts; amount_field/max_amount guard refunds/charges.",
+
+  "i_confirm_authorized_scope": false,
+  "i_own_all_accounts": false,
+  "allow_state_changing": false,
+
+  "base_url": "https://REPLACE-with-an-in-scope-pay-host",
+  "request_delay_seconds": 1.5,
+  "timeout_seconds": 20,
+  "output_log": "pay_ops_results.json",
+  "amount_field": "amount",
+  "max_amount": 1,
+
+  "actors": {
+    "MERCHANT_A": { "headers": { "Content-Type": "application/json", "Authorization": "Bearer REPLACE_MERCHANT_A_KEY" } },
+    "MERCHANT_B": { "headers": { "Content-Type": "application/json", "Authorization": "Bearer REPLACE_MERCHANT_B_KEY" } }
+  },
+
+  "steps": [
+    { "label": "A creates charge (baseline)", "actor": "MERCHANT_A", "method": "POST",
+      "path": "/REPLACE/charges",
+      "body": "{\"amount\":\"0.10\",\"currency\":\"USDT\",\"order_id\":\"own-test-1\"}",
+      "expect": { "marker": "id" },
+      "capture": [ { "name": "charge_id", "regex": "\"id\"\\s*:\\s*\"([A-Za-z0-9_-]+)\"" } ] },
+
+    { "label": "A reads own charge (baseline)", "actor": "MERCHANT_A", "method": "GET",
+      "path": "/REPLACE/charges/{{charge_id}}", "expect": { "marker": "own-test-1" } },
+
+    { "label": "B reads A's charge (ISOLATION)", "actor": "MERCHANT_B", "method": "GET",
+      "path": "/REPLACE/charges/{{charge_id}}", "expect": { "deny": true } },
+
+    { "label": "B refunds A's charge (ISOLATION)", "actor": "MERCHANT_B", "method": "POST",
+      "path": "/REPLACE/charges/{{charge_id}}/refunds",
+      "body": "{\"amount\":\"0.10\"}", "expect": { "deny": true } },
+
+    { "label": "A refunds MORE than charged (INV-BAL)", "actor": "MERCHANT_A", "method": "POST",
+      "path": "/REPLACE/charges/{{charge_id}}/refunds",
+      "body": "{\"amount\":\"0.50\"}", "expect": { "deny": true } },
+
+    { "label": "A double-refunds same charge (INV-IDEM)", "actor": "MERCHANT_A", "method": "POST",
+      "path": "/REPLACE/charges/{{charge_id}}/refunds",
+      "body": "{\"amount\":\"0.10\"}", "expect": { "deny": true } }
+  ]
+}

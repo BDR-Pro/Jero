@@ -100,6 +100,8 @@ ownership and replace the placeholder host) and a `--dry-run` that sends nothing
 | H-4 token audience/scope | `tools/token_audience_harness.py` | `tools/token_audience_config.sample.json` | JWT claim introspection + cross-product matrix; `--decode-only` is offline |
 | H-3 signing ambiguity | `tools/params_to_str_collision.py` | — | already run; DISPROVED (see `tools/H3_signing_ambiguity_analysis.md`) |
 | H-5 session/recovery desync | *(manual)* `playbooks/H5_session_recovery_desync_playbook.md` | — | two-session timeline; safest high-value start (no funds) |
+| H-7 Pay isolation + state machine | `tools/pay_merchant_ops_harness.py` | `tools/pay_ops_config.sample.json` | two-merchant ordered negative-test runner w/ capture+`{{var}}` substitution |
+| H-7 Pay webhook scheme | `tools/pay_webhook_analyzer.py` | `tools/webhook_capture.sample.json` | OFFLINE; recovers Pay's signing scheme, flags replay/tamper; playbook `playbooks/H7_pay_playbook.md` |
 
 Suggested first live session: **H-5 playbook** (no funds, pure authz) → **H-1 harness**
 (read-only IDOR) → then H-2/H-4 once you're comfortable and have captured the real

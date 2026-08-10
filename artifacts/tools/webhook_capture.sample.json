@@ -1,0 +1,10 @@
+{
+  "_comment": "SAMPLE capture: replace with a REAL webhook Crypto.com Pay sent to YOUR sandbox endpoint, and your real webhook secret. This sample uses a deliberately weak scheme to demonstrate detection.",
+  "signature_header_name": "Pay-Signature",
+  "headers": {
+    "Pay-Signature": "81ce6fc05b7518cc07baa347f16f7500492dc8866b165f333d716d533b81dba4",
+    "Content-Type": "application/json"
+  },
+  "raw_body": "{\"id\":\"chg_123\",\"status\":\"succeeded\",\"amount\":\"100\",\"currency\":\"USDT\",\"order_id\":\"ord_9\"}",
+  "webhook_secret": "whsec_SAMPLE_do_not_use_in_prod"
+}

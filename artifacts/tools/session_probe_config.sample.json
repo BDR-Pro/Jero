@@ -1,0 +1,40 @@
+{
+  "_comment": "H-5 survival probe. ONE of YOUR OWN accounts, multiple captured sessions/credentials. Prefer NON-DESTRUCTIVE sensitive reads as the oracle (list withdrawal addresses, list API keys, full profile). Set the confirm flags true when satisfied. schedule_seconds sets when to re-probe after you trigger the revocation event; extend to 3600 for stronger evidence. The refresh-token probe is a POST, so it needs allow_state_changing=true (harmless: it just tries to mint a new token).",
+
+  "i_confirm_authorized_scope": false,
+  "i_own_all_accounts": false,
+  "allow_state_changing": false,
+
+  "base_url": "https://REPLACE-with-an-in-scope-crypto.com-host",
+  "timeout_seconds": 20,
+  "schedule_seconds": [0, 2, 5, 15, 30, 60, 300],
+  "output_log": "session_revocation_results.json",
+
+  "probes": [
+    {
+      "label": "access_token / withdrawal-address-list",
+      "credential_type": "access_token",
+      "method": "GET",
+      "path": "/REPLACE/private/get-withdrawal-address-list",
+      "headers": { "Authorization": "Bearer REPLACE_STALE_ACCESS_TOKEN" },
+      "success_marker": "address"
+    },
+    {
+      "label": "web cookie / full profile",
+      "credential_type": "web_cookie",
+      "method": "GET",
+      "path": "/REPLACE/account/profile",
+      "headers": { "Cookie": "REPLACE_STALE_SESSION_COOKIE" },
+      "success_marker": "email"
+    },
+    {
+      "label": "refresh token / mint new access token (POST)",
+      "credential_type": "refresh_token",
+      "method": "POST",
+      "path": "/REPLACE/auth/refresh",
+      "headers": { "Content-Type": "application/json" },
+      "body": "{\"refresh_token\":\"REPLACE_STALE_REFRESH_TOKEN\"}",
+      "success_marker": "access_token"
+    }
+  ]
+}

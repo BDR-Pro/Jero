@@ -99,7 +99,7 @@ ownership and replace the placeholder host) and a `--dry-run` that sends nothing
 | H-2 idempotency / race | `tools/idempotency_race_harness.py` | `tools/idem_config.sample.json` | `--mode race`/`retry`; moves YOUR OWN funds; amount guard; verify via ledger |
 | H-4 token audience/scope | `tools/token_audience_harness.py` | `tools/token_audience_config.sample.json` | JWT claim introspection + cross-product matrix; `--decode-only` is offline |
 | H-3 signing ambiguity | `tools/params_to_str_collision.py` | — | already run; DISPROVED (see `tools/H3_signing_ambiguity_analysis.md`) |
-| H-5 session/recovery desync | *(manual)* `playbooks/H5_session_recovery_desync_playbook.md` | — | two-session timeline; safest high-value start (no funds) |
+| H-5 session/recovery desync | `tools/session_revocation_probe.py` + `playbooks/H5_session_recovery_desync_playbook.md` | `tools/session_probe_config.sample.json` | measures credential survival after a revocation event; you perform the event, tool times the death/survival; safest high-value start (no funds) |
 | H-7 Pay isolation + state machine | `tools/pay_merchant_ops_harness.py` | `tools/pay_ops_config.sample.json` | two-merchant ordered negative-test runner w/ capture+`{{var}}` substitution |
 | H-7 Pay webhook scheme | `tools/pay_webhook_analyzer.py` | `tools/webhook_capture.sample.json` | OFFLINE; recovers Pay's signing scheme, flags replay/tamper; playbook `playbooks/H7_pay_playbook.md` |
 

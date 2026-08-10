@@ -89,6 +89,29 @@ t+30s / t+5min / t+1h. The longer it survives, the stronger the report.
 
 ---
 
+## 5b. Automated survival measurement → `tools/session_revocation_probe.py`
+
+The manual timeline in §5 is precise but tedious across credential types. The probe
+tool automates the measurement (you still perform the revocation event by hand):
+
+1. Fill `tools/session_probe_config.sample.json`: your `base_url`, and one **probe per
+   credential** you want to test (access token, web cookie, refresh token, per-product
+   session). Use non-destructive sensitive reads as the oracle (e.g. list withdrawal
+   addresses, full profile). Set the confirm flags. Extend `schedule_seconds` to
+   `3600` for stronger evidence.
+2. Run it:
+   ```
+   python3 tools/session_revocation_probe.py --config session_probe_config.sample.json --dry-run
+   python3 tools/session_revocation_probe.py --config session_probe_config.sample.json
+   ```
+3. It baselines each credential (must succeed now), then prompts you to perform the
+   revocation event in your other session; the moment you press Enter it re-probes
+   every credential at t+0,2,5,… and prints a per-credential verdict:
+   **DIED at t+Xs** (≤~10s ≈ acceptable eventual consistency) or **SURVIVED ≥ t+Xs**
+   (potential finding). This gives you the exact survival window — the core evidence.
+
+It probes all credentials at each time point, so one run **is** the §6 variant matrix.
+
 ## 6. Variant analysis (Section 17 — the forgotten sibling)
 
 A single "logout" fixing the web session but not these is the classic partial fix.

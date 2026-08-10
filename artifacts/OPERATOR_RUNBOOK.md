@@ -1,0 +1,88 @@
+# OPERATOR_RUNBOOK.md — how to go from this framework to a submitted report
+
+This is the human-in-the-loop procedure. This automated environment cannot do it
+(targets are egress-blocked, and authorization is bound to *your* HackerOne account).
+Follow these steps on your own machine, with your own authorized accounts.
+
+---
+
+## Step 0 — Decide *where* you run (unblock the environment or go local)
+The blockers here are network egress + no human judgment loop. Two ways forward:
+- **(Recommended) Run on your own workstation.** Full control, your accounts, your
+  proxy. This runbook assumes that.
+- **Reconfigure a Claude-on-web environment's network policy** to allow egress to
+  `hackerone.com` and the in-scope `crypto.com` hosts, and drive it interactively.
+  Even then, *you* must supply authorization and stay in the loop for any action that
+  moves money or touches account state.
+
+## Step 1 — Establish authorization & capture the REAL scope (replaces the blocked bits)
+1. Log in to `https://hackerone.com/crypto?type=team`, read and **accept** the
+   program terms — this is the authorization.
+2. Copy the live **structured scope** table into `SCOPE_SNAPSHOT.md §4`, per asset:
+   identifier, in/out of scope, **bounty-eligible vs. VDP-only**, **max severity**,
+   and any per-asset instructions / rate limits / auth requirements.
+3. Note the policy revision date and record the `h1-policy-guidelines` commit hash.
+4. **Gate:** if an asset isn't clearly in scope → do not touch it (Section 0).
+
+## Step 2 — Provision researcher-controlled identities (never a real user)
+- **ATTACKER** and **VICTIM** accounts — both yours. Fund with the smallest amounts
+  needed; prefer a sandbox/testnet where the program offers one.
+- For Pay: a test **merchant** account. For Exchange: create a **read-only** API key
+  and a separate **trade** key so you can test scope boundaries safely.
+- KYC only to the minimum tier a test requires.
+
+## Step 3 — Instrument
+- Intercepting proxy (Burp / mitmproxy) for web **and** mobile (install the CA on a
+  test device / emulator). Capture the real request contracts into `API_MAP.md`.
+- Keep an evidence log per Section 24: UTC, account, request, response, side effect,
+  conclusion. Redact tokens/secrets/PII before saving.
+
+## Step 4 — Execute hypotheses in priority order (RESEARCH_PLAN.md)
+Order: **H-1** (IDOR) → H-4/H-5 (token audience, recovery/session) → H-2/H-10
+(financial state machine + rollback) → H-7 (Pay isolation/webhook) → H-6
+(backend/version divergence) → H-8 (asset/precision) → H-9 (wallet signing).
+H-3 is **DISPROVED** for the standard model — only revisit if Step 4 reveals a
+delegated/oracle signing surface or a read-vs-trade scope split.
+
+For each hypothesis:
+1. Read-only first (enumerate, observe). Escalate to a state-changing test only on
+   your own objects, smallest values, 2–5 parallel requests max for races.
+2. Compare **body + side effects + async events**, not just HTTP status (Section 9).
+3. Run the **destroy-it** checklist for that hypothesis before believing it.
+4. Reproduce **≥3×** from a clean session.
+
+## Step 5 — Start with H-1 using the provided harness
+```
+# configure two OWN accounts + their own object ids, then:
+python3 artifacts/tools/idor_differential_harness.py --config my_idor_config.json
+```
+It runs the A/B ownership matrix and flags any case where ATTACKER reads/mutates
+VICTIM's object. See the file header for config format and the built-in safety gate.
+
+## Step 6 — Confirmation gate (Section 25) before writing anything
+Promote to `reports/` only if ALL hold:
+```
+[ ] current in-scope asset (verified on HackerOne)
+[ ] Crypto.com-controlled root cause
+[ ] manually reproduced ≥3x from clean session
+[ ] concrete C/I/A impact (not theoretical)
+[ ] reliable minimal PoC
+[ ] policy-eligible (not on out-of-scope list)
+[ ] safe reproduction, own accounts only
+[ ] not scanner-only, not best-practice-only, not version-ID-only
+[ ] evidence preserved & redacted
+```
+
+## Step 7 — Write & submit
+Use the report template (engagement Section 27): title → summary → affected asset →
+scope evidence → root cause → preconditions → reproduction → expected vs actual →
+PoC → impact → why Crypto.com-controlled → policy eligibility → severity rationale
+(CVSS CIA) → remediation → sanitized evidence. Submit via HackerOne. One clear,
+reproducible bug beats ten maybes.
+
+---
+
+## Guardrails (do not cross — Section 2)
+No touching another real person's data/funds; no mass download; no DoS/load tests; no
+persistence; no third-party infra; smallest values; own accounts only; stop at the
+minimum proof.

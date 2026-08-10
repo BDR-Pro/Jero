@@ -1,0 +1,34 @@
+{
+  "_comment": "H-1 IDOR harness config. Fill in with YOUR OWN accounts and objects you have confirmed are in current HackerOne scope. Set the two confirm flags to true only when both are genuinely satisfied. Keep amounts/objects minimal. Never use a real user's account or data.",
+
+  "i_confirm_authorized_scope": false,
+  "i_own_all_accounts": false,
+  "allow_state_changing": false,
+
+  "base_url": "https://REPLACE-with-an-in-scope-crypto.com-host",
+  "request_delay_seconds": 1.5,
+  "timeout_seconds": 20,
+  "output_log": "idor_results.json",
+
+  "accounts": {
+    "ATTACKER": { "headers": { "Authorization": "Bearer REPLACE_ATTACKER_TOKEN" } },
+    "VICTIM":   { "headers": { "Authorization": "Bearer REPLACE_VICTIM_TOKEN" } }
+  },
+
+  "objects": [
+    {
+      "label": "victim_order_detail",
+      "owner": "VICTIM",
+      "method": "GET",
+      "path": "/v1/private/get-order-detail?order_id=REPLACE_VICTIM_ORDER_ID",
+      "owner_marker": "REPLACE_VICTIM_ORDER_ID"
+    },
+    {
+      "label": "victim_transaction",
+      "owner": "VICTIM",
+      "method": "GET",
+      "path": "/REPLACE/transactions/REPLACE_VICTIM_TX_ID",
+      "owner_marker": "REPLACE_VICTIM_TX_ID"
+    }
+  ]
+}

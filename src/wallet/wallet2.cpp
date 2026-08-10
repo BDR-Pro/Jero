@@ -306,6 +306,8 @@ uint64_t calculate_fee(uint64_t fee_per_kb, size_t bytes)
 
 uint64_t calculate_fee_from_weight(uint64_t base_fee, uint64_t weight, uint64_t fee_quantization_mask)
 {
+  THROW_WALLET_EXCEPTION_IF(base_fee != 0 && weight > std::numeric_limits<uint64_t>::max() / base_fee,
+      tools::error::wallet_internal_error, "Fee calculation overflow");
   uint64_t fee = weight * base_fee;
   fee = (fee + fee_quantization_mask - 1) / fee_quantization_mask * fee_quantization_mask;
   return fee;
@@ -1051,6 +1053,7 @@ gamma_picker::gamma_picker(const std::vector<uint64_t> &rct_offsets, double shap
   end = rct_offsets.data() + rct_offsets.size() - (std::max(1, CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE) - 1);
   num_rct_outputs = *(end - 1);
   THROW_WALLET_EXCEPTION_IF(num_rct_outputs == 0, error::wallet_internal_error, "No rct outputs");
+  THROW_WALLET_EXCEPTION_IF(outputs_to_consider == 0, error::wallet_internal_error, "No outputs in consideration window");
   average_output_time = DIFFICULTY_TARGET_V2 * blocks_to_consider / static_cast<double>(outputs_to_consider); // this assumes constant target over the whole rct range
 };
 
@@ -8477,7 +8480,7 @@ uint64_t wallet2::get_fee_multiplier(fee_priority priority, fee_algorithm fee_al
   }
 
   const auto fee_algorithm_index = fee_algorithm_utilities::as_integral(fee_algorithm);
-  THROW_WALLET_EXCEPTION_IF(fee_algorithm_index < 0 || fee_algorithm_index > static_cast<int>(std::size(fee_steps)), error::invalid_priority);
+  THROW_WALLET_EXCEPTION_IF(fee_algorithm_index < 0 || fee_algorithm_index >= static_cast<int>(std::size(fee_steps)), error::invalid_priority);
 
   // 1 to 3/4 are allowed as priorities
   const fee_priority max_priority = fee_steps[fee_algorithm_index].maximum_priority;
@@ -9088,6 +9091,8 @@ void wallet2::get_outs(std::vector<std::vector<tools::wallet2::get_outs_entry>> 
       // check we're clear enough of rct start, to avoid corner cases below
       THROW_WALLET_EXCEPTION_IF(rct_offsets.size() < std::max<size_t>(1, CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE),
           error::get_output_distribution, "Not enough rct outputs");
+      THROW_WALLET_EXCEPTION_IF(!std::is_sorted(rct_offsets.begin(), rct_offsets.end()),
+          error::get_output_distribution, "Daemon reports non-monotonic rct output distribution");
       THROW_WALLET_EXCEPTION_IF(rct_offsets.back() <= max_rct_index,
           error::get_output_distribution, "Daemon reports suspicious number of rct outputs");
     }

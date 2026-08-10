@@ -13,7 +13,7 @@ confirmed-in-scope, testable asset exists from this environment (SCOPE_SNAPSHOT.
 |----|-------------------|------------|-------------------|----------------|---------------|-----------|--------|
 | H-1 | App/Exchange/NFT/Pay | IDOR / horizontal authz on object ids (INV-OWN) | Model only; no live test (assets blocked) | C/I High | Eligible **iff** asset in HackerOne scope; not on OOS list | n/a — untested | BLOCKED_BY_ENV |
 | H-2 | App/Exchange | Withdrawal/transfer race + idempotency (INV-IDEM/STATE/BAL) | Model only | Integrity High (balance) | Eligible iff in scope | n/a | BLOCKED_BY_ENV |
-| H-3 | Exchange API | Signed-vs-executed divergence / nonce replay (INV-SIGN) | Public signing scheme reviewed (API_MAP §3); no live test | Med; likely self-limited | Eligible iff cross-account impact shown | Low (self-signed caveat) | INVESTIGATING → BLOCKED_BY_ENV |
+| H-3 | Exchange API | Signing concatenation ambiguity (INV-SIGN) | **Local PoC run** — collisions confirmed (`tools/params_to_str_collision.py`); analysis in `tools/H3_signing_ambiguity_analysis.md` | None in standard model | Ineligible as-is (theoretical); revivable only via a signing privilege-split | Resolved | **DISPROVED** (standard model) — residual leads noted |
 | H-4 | Multi-product | Cross-product token audience/scope confusion (INV-AUTHN) | Model only | Priv esc | Eligible iff in scope | n/a | BLOCKED_BY_ENV |
 | H-5 | App/Exchange | MFA/recovery/session revocation desync (INV-AUTHN) | Model only | Account takeover-adjacent | Eligible iff in scope | n/a | BLOCKED_BY_ENV |
 | H-6 | App vs Web vs v1/v2 | Backend/version policy divergence (Section 10) | Model only | Bypass of a control | Eligible iff in scope | n/a | BLOCKED_BY_ENV |
@@ -29,6 +29,8 @@ confirmed-in-scope, testable asset exists from this environment (SCOPE_SNAPSHOT.
 ## Notes
 - Every `BLOCKED_BY_ENV` row is a *ready-to-run* plan for a human with authorized
   HackerOne access (see RESEARCH_PLAN.md), not a claimed vulnerability.
-- H-3 is the only hypothesis with a public artifact to study now; its exploitability
-  is doubtful because API requests are signed with the caller's own secret — kept
-  open but low-confidence.
+- H-3 was resolved locally: the signing-string ambiguity is **real but not
+  exploitable** in the single-party API-key model (you sign with your own secret, so
+  a collision grants no new capability). DISPROVED unless live testing reveals a
+  delegated/oracle signing surface or a scope/recursion-cap divergence — see
+  `tools/H3_signing_ambiguity_analysis.md`.

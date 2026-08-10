@@ -86,3 +86,21 @@ reproducible bug beats ten maybes.
 No touching another real person's data/funds; no mass download; no DoS/load tests; no
 persistence; no third-party infra; smallest values; own accounts only; stop at the
 minimum proof.
+
+---
+
+## Tooling index (all in `artifacts/`)
+Each harness has a hard safety gate (won't send until you confirm scope + account
+ownership and replace the placeholder host) and a `--dry-run` that sends nothing.
+
+| Hypothesis | Tool | Sample config | Notes |
+|-----------|------|---------------|-------|
+| H-1 IDOR / object authz | `tools/idor_differential_harness.py` | `tools/idor_config.sample.json` | read-only by default; two-account A/B matrix |
+| H-2 idempotency / race | `tools/idempotency_race_harness.py` | `tools/idem_config.sample.json` | `--mode race`/`retry`; moves YOUR OWN funds; amount guard; verify via ledger |
+| H-4 token audience/scope | `tools/token_audience_harness.py` | `tools/token_audience_config.sample.json` | JWT claim introspection + cross-product matrix; `--decode-only` is offline |
+| H-3 signing ambiguity | `tools/params_to_str_collision.py` | — | already run; DISPROVED (see `tools/H3_signing_ambiguity_analysis.md`) |
+| H-5 session/recovery desync | *(manual)* `playbooks/H5_session_recovery_desync_playbook.md` | — | two-session timeline; safest high-value start (no funds) |
+
+Suggested first live session: **H-5 playbook** (no funds, pure authz) → **H-1 harness**
+(read-only IDOR) → then H-2/H-4 once you're comfortable and have captured the real
+request contracts.

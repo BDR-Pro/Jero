@@ -1,0 +1,32 @@
+{
+  "_comment": "H-2 idempotency/race harness. Operates on YOUR OWN account and moves YOUR OWN funds. Use the smallest possible amount (e.g. a tiny self-withdrawal or self-transfer). Set all four confirm flags to true only when genuinely satisfied. amount_field+max_amount act as a fat-finger guard.",
+
+  "i_confirm_authorized_scope": false,
+  "i_own_all_accounts": false,
+  "allow_state_changing": false,
+  "i_understand_this_moves_my_own_funds": false,
+
+  "base_url": "https://REPLACE-with-an-in-scope-crypto.com-host",
+  "n": 3,
+  "retry_delay_seconds": 2.0,
+  "timeout_seconds": 20,
+  "output_log": "idem_results.json",
+
+  "amount_field": "amount",
+  "max_amount": 1,
+  "allow_unparsed_amount": false,
+
+  "success_statuses": [200, 201],
+  "success_marker": null,
+  "id_regex": "\"(?:withdrawal_id|id|order_id)\"\\s*:\\s*\"?([A-Za-z0-9_-]+)\"?",
+
+  "op": {
+    "method": "POST",
+    "path": "/REPLACE/private/create-withdrawal",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer REPLACE_OWN_TOKEN"
+    },
+    "body": "{\"amount\":\"0.0001\",\"currency\":\"USDT\",\"address\":\"REPLACE_OWN_ADDRESS\",\"client_wid\":\"REPLACE_SAME_KEY_EACH_TIME\"}"
+  }
+}

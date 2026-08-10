@@ -1,0 +1,24 @@
+{
+  "_comment": "H-4 token audience/scope confusion. Collect a token from each product you can log into (all YOUR accounts). Probes are sensitive reads/actions per product. The harness cross-tests each token against OTHER products' probes. --decode-only just introspects JWTs and sends nothing.",
+
+  "i_confirm_authorized_scope": false,
+  "i_own_all_accounts": false,
+  "allow_state_changing": false,
+
+  "base_url": "https://REPLACE-with-an-in-scope-crypto.com-host",
+  "request_delay_seconds": 1.5,
+  "timeout_seconds": 20,
+  "output_log": "token_audience_results.json",
+
+  "tokens": {
+    "app_token":      { "product": "app",      "header_value": "Bearer REPLACE_APP_TOKEN" },
+    "exchange_token": { "product": "exchange", "header_value": "Bearer REPLACE_EXCHANGE_TOKEN" },
+    "nft_token":      { "product": "nft",      "header_value": "Bearer REPLACE_NFT_TOKEN" }
+  },
+
+  "probes": [
+    { "label": "app_profile",     "product": "app",      "method": "GET", "path": "/REPLACE/app/profile",      "success_marker": "email" },
+    { "label": "exchange_balance","product": "exchange", "method": "GET", "path": "/REPLACE/private/user-balance","success_marker": "available" },
+    { "label": "nft_account",     "product": "nft",      "method": "GET", "path": "/REPLACE/nft/account",       "success_marker": "user_id" }
+  ]
+}
